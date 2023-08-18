@@ -1,0 +1,20 @@
+﻿@page "/counter"
+
+<PageTitle>Contador</PageTitle>
+
+<div class="mb-5">
+    <h1 class="display-7">Contador</h1>
+    <p class="lead">Esse componente demonstra o uso de eventos</p>
+</div>
+
+<p role="status">Contagem atual: @currentCount</p>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

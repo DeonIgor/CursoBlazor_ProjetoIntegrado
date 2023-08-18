@@ -1,0 +1,48 @@
+﻿@page "/fetchdata"
+@using IntegratedBlazorProject.Shared
+@inject HttpClient Http
+
+<PageTitle>Previsão do Tempo</PageTitle>
+
+<div class="mb-5">
+    <h1 class="display-7">Previsão do Tempo</h1>
+    <p class="lead">Esse componente demonstra a recuperação de dados do servidor</p>
+</div>
+
+@if (forecasts == null)
+{
+    <p><em>Carregando...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Sumário</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+    }
+}

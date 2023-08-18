@@ -1,0 +1,90 @@
+﻿@page "/products"
+
+<div class="mb-5">
+    <h1 class="display-7">Produtos</h1>
+    <p class="lead">
+        Esse Componente exemplifica a conexão com banco de dados
+    </p>
+</div>
+
+@if (products == null)
+{
+    <p class="lead">
+        Carregando...
+    </p>
+}
+else if (products.Count == 0)
+{
+    <p class="text-body-secondary">
+        Não há items para exibir
+    </p>
+    <button class="btn btn-secondary w-auto" @onclick="fetchItems">
+        Recarregar Lista
+    </button>
+}
+else
+{
+    <div class="row-2 col-10">
+
+        <div class="row pb-1">
+            <div class="col-9 rounded bg-dark text-white">
+                <div class="row py-1">
+                    <div class="col-4 fw-semibold text-center">Produto</div>
+                    <div class="col-4 fw-semibold text-center">Descrição</div>
+                    <div class="col-4 fw-semibold text-center">Valor</div>
+                </div>
+            </div>
+            <div class="col-3 p-0">
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-primary w-100 ms-1">Novo</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach(Product p in products)
+            {
+                <EditForm Model = "@p" class="d-flex w-100 p-0 pb-1">
+                    <DataAnnotationsValidator />
+
+                    <input type="text" id="productName" class="form-control bg-transparent w-25 me-1" @bind="p.Name" readonly />
+                    <ValidationMessage For="() => p.Name" />
+                    <input type="text" id="productName" class="form-control bg-transparent w-25 mx-1" @bind="p.Description" readonly />
+                    <ValidationMessage For="() => p.Description" />
+                    <input type="number" id="productName" class="form-control bg-transparent w-25 mx-1" @bind="p.Price" readonly />
+                    <ValidationMessage For="() => p.Price" />
+                    <div class="d-flex w-25">
+                        <button class="btn btn-dark w-50 me-1">Editar</button>
+                        <button class="btn btn-danger w-50">Deletar</button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    List<Product> products = new List<Product>();
+    Product selectedProduto { get; set; }
+
+    protected override void OnInitialized()
+    {
+        fetchItems();
+    }
+
+    void fetchItems()
+    {
+        products = new List<Product>()
+        {
+            new Product("Televisão", "4K", 3500),
+            new Product("Computador", "i9 16GB SSD 1T", 5000),
+            new Product("Mesa", "Madeira", 2000),
+            new Product("Cadeira", "Estofado", 80)
+        };
+    }
+
+    void deleteItem()
+    {
+        products.Remove(selectedProduto);
+    }
+}

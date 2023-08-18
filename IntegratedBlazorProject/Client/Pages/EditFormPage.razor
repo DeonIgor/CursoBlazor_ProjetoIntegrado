@@ -1,0 +1,46 @@
+﻿@page "/editForm"
+
+<PageTitle>EditForm</PageTitle>
+
+<div class="mb-5">
+    <h1 class="display-7">EditForm</h1>
+    <p class="lead">Teste com componente EditForm para fixar as mecânicas, sintaxe e bootstrap</p>
+</div>
+
+<EditForm Model="@user" class="d-flex flex-column w-75">
+    <DataAnnotationsValidator />
+
+    <div class="align-items-center my-1">
+        <label for="userName" class="w-auto">Nome:</label>
+        <input type="text" id="userName" class="form-control w-100" placeholder="Digite seu nome"
+            @bind="user.Name" />
+        <ValidationMessage For="() => user.Name" />
+    </div>
+
+    <div class="align-items-center my-1">
+        <label for="userAge" class="w-auto">Idade:</label>
+        <input type="number" id="userAge" class="form-control w-100" placeholder="Digite sua idade"
+            @bind="user.Age" />
+        <ValidationMessage For="() => user.Age" />
+    </div>
+
+    <div class="align-items-center my-1">
+        <label for="userEmail" class="w-auto">Email:</label>
+        <input type="email" id="userEmail" class="form-control w-100" placeholder="Digite seu e-mail"
+            @bind="user.Email" />
+        <ValidationMessage For="() => user.Email" />
+    </div>
+
+    <div class="align-items-center my-1">
+        <label for="userPassword" class="w-auto">Senha:</label>
+        <input type="text" id="userPassword" class="form-control w-100" placeholder="Digite sua senha"
+            @bind="user.Password" />
+        <ValidationMessage For="() => user.Password" />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-25 mt-2">Enviar</button>
+</EditForm>
+
+@code {
+    User user = new User();
+}
