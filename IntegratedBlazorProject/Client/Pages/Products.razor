@@ -7,13 +7,13 @@
     </p>
 </div>
 
-@if (products == null)
+@if (productList == null)
 {
     <p class="lead">
         Carregando...
     </p>
 }
-else if (products.Count == 0)
+else if (productList.Count == 0)
 {
     <p class="text-body-secondary">
         Não há items para exibir
@@ -36,27 +36,55 @@ else
             </div>
             <div class="col-3 p-0">
                 <div class="d-flex justify-content-end">
-                    <button class="btn btn-primary w-100 ms-1">Novo</button>
+                    <button class="btn btn-primary w-100 ms-1" @onclick="addItem">
+                        Novo
+                    </button>
                 </div>
             </div>
         </div>
 
         <div class="row">
-            @foreach(Product p in products)
+            @foreach (var item in productList)
             {
-                <EditForm Model = "@p" class="d-flex w-100 p-0 pb-1">
+                <EditForm Model="@item.Key" class="d-flex w-100 p-0 pb-1">
                     <DataAnnotationsValidator />
 
-                    <input type="text" id="productName" class="form-control bg-transparent w-25 me-1" @bind="p.Name" readonly />
-                    <ValidationMessage For="() => p.Name" />
-                    <input type="text" id="productName" class="form-control bg-transparent w-25 mx-1" @bind="p.Description" readonly />
-                    <ValidationMessage For="() => p.Description" />
-                    <input type="number" id="productName" class="form-control bg-transparent w-25 mx-1" @bind="p.Price" readonly />
-                    <ValidationMessage For="() => p.Price" />
-                    <div class="d-flex w-25">
-                        <button class="btn btn-dark w-50 me-1">Editar</button>
-                        <button class="btn btn-danger w-50">Deletar</button>
-                    </div>
+                    @if(item.Value == "readonly")
+                    {
+                        <input type="text" class="form-control bg-transparent w-25 me-1 @item.Value" @bind="item.Key.Name" disabled />
+                        <ValidationMessage For="() => item.Key.Name" />
+                        <input type="text" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Description" disabled />
+                        <ValidationMessage For="() => item.Key.Description" />
+                        <input type="number" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Price" disabled />
+                        <ValidationMessage For="() => item.Key.Price" />
+
+                        <div class="d-flex w-25">
+                            <button class="btn btn-dark w-50 me-1" @onclick="() => editItem(item.Key)">
+                                Editar
+                            </button>
+                            <button class="btn btn-danger w-50" @onclick="e => deleteItem(item.Key)">
+                                Deletar
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <input type="text" class="form-control bg-transparent w-25 me-1 @item.Value" @bind="item.Key.Name" />
+                        <ValidationMessage For="() => item.Key.Name" />
+                        <input type="text" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Description" />
+                        <ValidationMessage For="() => item.Key.Description" />
+                        <input type="number" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Price" />
+                        <ValidationMessage For="() => item.Key.Price" />
+
+                        <div class="d-flex w-25">
+                            <button class="btn btn-success w-50 me-1" @onclick="() => editItem(item.Key)">
+                                Salvar
+                            </button>
+                            <button class="btn btn-danger w-50" @onclick="e => deleteItem(item.Key)">
+                                Deletar
+                            </button>
+                        </div>
+                    }
                 </EditForm>
             }
         </div>
@@ -64,8 +92,7 @@ else
 }
 
 @code {
-    List<Product> products = new List<Product>();
-    Product selectedProduto { get; set; }
+    Dictionary<Product, string> productList = new Dictionary<Product, string>();
 
     protected override void OnInitialized()
     {
@@ -74,17 +101,35 @@ else
 
     void fetchItems()
     {
-        products = new List<Product>()
+        productList = new Dictionary<Product, string>()
         {
-            new Product("Televisão", "4K", 3500),
-            new Product("Computador", "i9 16GB SSD 1T", 5000),
-            new Product("Mesa", "Madeira", 2000),
-            new Product("Cadeira", "Estofado", 80)
+
+            { new Product("Televisão", "4K", 3500), "readonly" },
+            { new Product("Computador", "i9 16GB SSD 1T", 5000), "readonly" },
+            { new Product("Mesa", "Madeira", 2000), "readonly" },
+            { new Product("Cadeira", "Estofado", 80), "readonly" }
         };
     }
 
-    void deleteItem()
+    void addItem()
     {
-        products.Remove(selectedProduto);
+        productList.Add(new Product("aaa", "bbb", new Random().Next()), "readonly");
+    }
+
+    void deleteItem(Product p)
+    {
+        productList.Remove(p);
+    }
+
+    void editItem(Product p)
+    {
+        if (productList[p] == "readonly")
+        {
+            productList[p] = "";
+        }
+        else
+        {
+            productList[p] = "readonly";
+        }
     }
 }
