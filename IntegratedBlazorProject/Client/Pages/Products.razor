@@ -1,4 +1,5 @@
 ﻿@page "/products"
+@inject HttpClient http
 
 <div class="mb-5">
     <h1 class="display-7">Produtos</h1>
@@ -94,13 +95,23 @@ else
 @code {
     Dictionary<Product, string> productList = new Dictionary<Product, string>();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        fetchItems();
+        await fetchItems();
     }
 
-    void fetchItems()
+    async Task fetchItems()
     {
+        try
+        {
+            Product[]? prods;
+            prods = await http.GetFromJsonAsync<Product[]>("api/Products");
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
         productList = new Dictionary<Product, string>()
         {
 
