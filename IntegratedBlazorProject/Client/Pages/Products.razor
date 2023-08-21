@@ -50,13 +50,13 @@ else
                 <EditForm Model="@item.Key" class="d-flex w-100 p-0 pb-1">
                     <DataAnnotationsValidator />
 
-                    @if(item.Value == "readonly")
+                    @if(item.Value == "readonly")       // Visualização
                     {
-                        <input type="text" class="form-control bg-transparent w-25 me-1 @item.Value" @bind="item.Key.Name" disabled />
+                        <input type="text" class="form-control bg-transparent w-25 me-1 text-truncate" @bind="item.Key.Name" disabled />
                         <ValidationMessage For="() => item.Key.Name" />
-                        <input type="text" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Description" disabled />
+                        <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" disabled />
                         <ValidationMessage For="() => item.Key.Description" />
-                        <input type="number" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Price" disabled />
+                        <input type="number" class="form-control bg-transparent w-25 mx-1" @bind="item.Key.Price" disabled />
                         <ValidationMessage For="() => item.Key.Price" />
 
                         <div class="d-flex w-25">
@@ -68,22 +68,30 @@ else
                             </button>
                         </div>
                     }
-                    else
+                    else                                // Edição
                     {
-                        <input type="text" class="form-control bg-transparent w-25 me-1 @item.Value" @bind="item.Key.Name" />
-                        <ValidationMessage For="() => item.Key.Name" />
-                        <input type="text" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Description" />
-                        <ValidationMessage For="() => item.Key.Description" />
-                        <input type="number" class="form-control bg-transparent w-25 mx-1 @item.Value" @bind="item.Key.Price" />
-                        <ValidationMessage For="() => item.Key.Price" />
+                        <div class="d-flex flex-column w-100">
+                            <div class="d-flex w-100 mb-1">
+                                <input type="text" class="form-control bg-transparent w-25 me-1 text-truncate" @bind="item.Key.Name" />
+                                <ValidationMessage For="() => item.Key.Name" />
+                                <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" />
+                                <ValidationMessage For="() => item.Key.Description" />
+                                <input type="number" class="form-control bg-transparent w-25 mx-1" @bind="item.Key.Price" />
+                                <ValidationMessage For="() => item.Key.Price" />
 
-                        <div class="d-flex w-25">
-                            <button class="btn btn-success w-50 me-1" @onclick="() => editItem(item.Key)">
-                                Salvar
-                            </button>
-                            <button class="btn btn-danger w-50" @onclick="e => deleteItem(item.Key)">
-                                Deletar
-                            </button>
+                                <div class="d-flex w-25">
+                                    <button class="btn btn-success w-50 me-1" @onclick="() => editItem(item.Key)">
+                                        Salvar
+                                    </button>
+                                    <button class="btn btn-danger w-50" @onclick="e => deleteItem(item.Key)">
+                                        Deletar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex w-100">
+                                <label class="text-end text-muted w-25 p-2">Categoria:</label>
+                                <input type="text" class="form-control bg-transparent w-50 ms-1 text-truncate" @bind="item.Key.Category.Name" />
+                            </div>
                         </div>
                     }
                 </EditForm>
@@ -115,16 +123,16 @@ else
         productList = new Dictionary<Product, string>()
         {
 
-            { new Product("Televisão", "4K", 3500), "readonly" },
-            { new Product("Computador", "i9 16GB SSD 1T", 5000), "readonly" },
-            { new Product("Mesa", "Madeira", 2000), "readonly" },
-            { new Product("Cadeira", "Estofado", 80), "readonly" }
+            { new Product("Televisão", "4K", 3500, new Category("Eletrônicos")), "readonly" },
+            { new Product("Computador", "i9 16GB SSD 1T", 5000, new Category("Eletrônicos")), "readonly" },
+            { new Product("Mesa", 2000, new Category("Móveis")), "readonly" },
+            { new Product("Cadeira", "Estofado", 80, new Category("Móveis")), "readonly" }
         };
     }
 
     void addItem()
     {
-        productList.Add(new Product("aaa", "bbb", new Random().Next()), "readonly");
+        productList.Add(new Product("aaa", "bbb", new Random().Next(), new Category()), "readonly");
     }
 
     void deleteItem(Product p)
