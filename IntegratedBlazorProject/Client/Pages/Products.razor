@@ -110,37 +110,54 @@ else
 
     async Task fetchItems()
     {
+        Product[]? prods;
         try
         {
-            Product[]? prods;
             prods = await http.GetFromJsonAsync<Product[]>("api/Products");
+            foreach (Product p in prods)
+            {
+                productList.Add(p, "readonly");
+            }
         }
         catch(Exception e)
         {
             Console.WriteLine(e.Message);
         }
+    }
 
-        productList = new Dictionary<Product, string>()
+    async Task addItem()
+    {
+        Category c = new Category("Categoria A");
+        Product p = new Product("Nome A", "Descricao A", 150, c);
+
+        if (productList.Any(pair => pair.Key == p)) return;
+
+        try
         {
-
-            { new Product("Televisão", "4K", 3500, new Category("Eletrônicos")), "readonly" },
-            { new Product("Computador", "i9 16GB SSD 1T", 5000, new Category("Eletrônicos")), "readonly" },
-            { new Product("Mesa", 2000, new Category("Móveis")), "readonly" },
-            { new Product("Cadeira", "Estofado", 80, new Category("Móveis")), "readonly" }
-        };
+            await http.PostAsJsonAsync("api/Products", p);
+            productList.Add(p, "readonly");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 
-    void addItem()
+    async Task deleteItem(Product p)
     {
-        productList.Add(new Product("aaa", "bbb", new Random().Next(), new Category()), "readonly");
+        try
+        {
+            await http.DeleteAsync($"api/Products/{p.ProductId}");
+            productList.Remove(p);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
     }
 
-    void deleteItem(Product p)
-    {
-        productList.Remove(p);
-    }
-
-    void editItem(Product p)
+    async Task editItem(Product p)
     {
         if (productList[p] == "readonly")
         {
@@ -149,6 +166,13 @@ else
         else
         {
             productList[p] = "readonly";
+            saveItems();
         }
+    }
+
+
+    async Task saveItems()
+    {
+        
     }
 }

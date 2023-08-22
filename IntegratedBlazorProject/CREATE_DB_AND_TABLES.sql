@@ -1,0 +1,21 @@
+CREATE DATABASE ProductsProject;
+
+USE ProductsProject
+
+CREATE TABLE Products 
+(
+	ProductId UNIQUEIDENTIFIER PRIMARY KEY,
+	Name VARCHAR(50) NOT NULL,
+	Description VARCHAR(150),
+	Price FLOAT NOT NULL,
+	FK_CategoryId UNIQUEIDENTIFIER
+)
+
+CREATE TABLE Categories 
+(
+	CategoryId UNIQUEIDENTIFIER PRIMARY KEY,
+	Name VARCHAR(50) NOT NULL
+);
+
+ALTER TABLE Products
+ADD CONSTRAINT FK_Category FOREIGN KEY (FK_CategoryId) REFERENCES Categories(CategoryId);
