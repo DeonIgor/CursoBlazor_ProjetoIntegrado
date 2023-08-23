@@ -8,19 +8,22 @@
     </p>
 </div>
 
-@if (productList == null)
+@if (Prods == null)
 {
     <p class="lead">
         Carregando...
     </p>
 }
-else if (productList.Count == 0)
+else if (Prods.Count == 0)
 {
     <p class="text-body-secondary">
         Não há items para exibir
     </p>
     <button class="btn btn-secondary w-auto" @onclick="fetchItems">
         Recarregar Lista
+    </button>
+    <button class="btn btn-primary w-auto" @onclick="addItem">
+        Adiconar Produto
     </button>
 }
 else
@@ -45,7 +48,7 @@ else
         </div>
 
         <div class="row">
-            @foreach (var item in productList)
+            @foreach (var item in ProductList)
             {
                 <EditForm Model="@item.Key" class="d-flex w-100 p-0 pb-1">
                     <DataAnnotationsValidator />
@@ -101,7 +104,8 @@ else
 }
 
 @code {
-    Dictionary<Product, string> productList = new Dictionary<Product, string>();
+    Dictionary<Product, string> ProductList = new Dictionary<Product, string>();
+    List<Product> Prods { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,13 +114,19 @@ else
 
     async Task fetchItems()
     {
-        Product[]? prods;
         try
         {
-            prods = await http.GetFromJsonAsync<Product[]>("api/Products");
-            foreach (Product p in prods)
+            Prods = await http.GetFromJsonAsync<List<Product>>("api/Products");
+            if (Prods != null)
             {
-                productList.Add(p, "readonly");
+                foreach (Product p in Prods)
+                {
+                    ProductList.Add(p, "readonly");
+                }
+            }
+            else
+            {
+                Prods = new List<Product>();
             }
         }
         catch(Exception e)
@@ -130,12 +140,13 @@ else
         Category c = new Category("Categoria A");
         Product p = new Product("Nome A", "Descricao A", 150, c);
 
-        if (productList.Any(pair => pair.Key == p)) return;
+        if (Prods.Any(prod => prod == p)) return;
 
         try
         {
             await http.PostAsJsonAsync("api/Products", p);
-            productList.Add(p, "readonly");
+            Prods.Add(p);
+            ProductList.Add(p, "readonly");
         }
         catch (Exception e)
         {
@@ -148,7 +159,8 @@ else
         try
         {
             await http.DeleteAsync($"api/Products/{p.ProductId}");
-            productList.Remove(p);
+            Prods.Remove(p);
+            ProductList.Remove(p);
         }
         catch (Exception e)
         {
@@ -159,20 +171,13 @@ else
 
     async Task editItem(Product p)
     {
-        if (productList[p] == "readonly")
+        if (ProductList[p] == "readonly")
         {
-            productList[p] = "";
+            ProductList[p] = "";
         }
         else
         {
-            productList[p] = "readonly";
-            saveItems();
+            ProductList[p] = "readonly";
         }
-    }
-
-
-    async Task saveItems()
-    {
-        
     }
 }
