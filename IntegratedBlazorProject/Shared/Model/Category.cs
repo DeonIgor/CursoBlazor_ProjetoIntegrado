@@ -13,7 +13,7 @@ namespace IntegratedBlazorProject.Shared.Model
         public Category() 
         {
             this.CategoryId = Guid.NewGuid();
-            this.Name = "---";
+            this.Name = "";
         }
 
         public Category(string name)

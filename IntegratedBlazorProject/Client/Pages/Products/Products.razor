@@ -1,5 +1,6 @@
 ﻿@page "/products"
 @inject HttpClient http
+@inject NavigationManager NavManager
 
 <div class="mb-5">
     <h1 class="display-7">Produtos</h1>
@@ -141,21 +142,7 @@ else
 
     async Task addItem()
     {
-        Category c = new Category("---");
-        c.CategoryId = new Guid();
-        Product p = new Product("---", "---", 1, c);
-
-        if (Prods.Any(prod => prod == p)) return;
-
-        try
-        {
-            await http.PostAsJsonAsync("api/Products", p);
-            await fetchItems();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
+        NavManager.NavigateTo("/products/create");
     }
 
     async Task deleteItem(Product p)
@@ -169,7 +156,6 @@ else
         {
             Console.WriteLine(e.Message);
         }
-
     }
 
     async Task editItem(Product p)

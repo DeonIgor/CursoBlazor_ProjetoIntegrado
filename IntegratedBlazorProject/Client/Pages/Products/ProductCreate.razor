@@ -1,0 +1,82 @@
+﻿@page "/products/create"
+@inject HttpClient http
+@inject NavigationManager NavManager
+
+    <div class="mb-5">
+        <h1 class="display-7">Produtos</h1>
+        <p class="lead">
+            Esse Componente exemplifica a conexão com banco de dados com Dapper
+        </p>
+    </div>
+
+    <EditForm Model="@product" class="w-100 p-0 pb-1" OnValidSubmit="@addItem">
+        <DataAnnotationsValidator />
+
+        <div class="d-flex flex-column col-9">
+            <div class="form-group row mb-1">
+                <label class="col-2">Nome</label>
+                <div class="col-9">
+                    <input type="text" class="form-control bg-transparent text-truncate" @bind="product.Name">
+                    <ValidationMessage For="() => product.Name" />
+                </div>
+            </div>
+            <div class="form-group row my-1">
+                <label class="col-2">Descrição</label>
+                <div class="col-9">
+                    <input type="text" class="form-control bg-transparent text-truncate" @bind="product.Description">
+                    <ValidationMessage For="() => product.Description" />
+                </div>
+            </div>
+            <div class="form-group row my-1">
+                <label class="col-2">Preço</label>
+                <div class="col-9">
+                    <input type="number" class="form-control bg-transparent text-truncate" @bind="product.Price">
+                    <ValidationMessage For="() => product.Price" />
+                </div>
+            </div>
+            <div class="form-group row my-1">
+                <label class="col-2">Categoria</label>
+                <div class="col-9">
+                    <input type="search" class="form-control bg-transparent text-truncate" @bind="product.Category.Name">
+                    <ValidationMessage For="() => product.Category.Name" />
+                </div>
+            </div>
+
+            <div class="form-group d-flex col-4 mt-2">
+                <button type="submit" class="btn btn-success w-50 me-1">
+                    Salvar
+                </button>
+                <button type="reset" class="btn btn-dark w-50" @onclick="returnToProducts">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </EditForm>
+
+@code {
+    Product product = new Product();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    async Task addItem()
+    {
+        try
+        {
+            await http.PostAsJsonAsync("api/Products", product);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        returnToProducts();
+    }
+
+    void returnToProducts()
+    {
+        NavManager.NavigateTo("/products");
+    }
+}
