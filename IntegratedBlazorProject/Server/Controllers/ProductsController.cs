@@ -53,10 +53,25 @@ namespace IntegratedBlazorProject.Server.Controllers
             using (var connection = new SqlConnection(ConnString))
             {
                 var sqlInsert = "";
-                var sqlCategories = "SELECT c.CategoryId FROM [ProductsProject].[dbo].[Categories] c";
-                List<Guid> categories = connection.Query<Guid>(sqlCategories).AsList();
+                var sqlCategories = "SELECT c.CategoryId, c.Name FROM [ProductsProject].[dbo].[Categories] c";
+                List<Category> categories = connection.Query<Category>(sqlCategories).AsList();
+                bool categoryExists = false;
 
-                if (categories.Contains(product.Category.CategoryId))
+                foreach (Category category in categories)
+                {
+                    if ((category.Name == product.Category.Name))
+                    {
+                        product.Category.CategoryId = category.CategoryId;
+                        categoryExists = true;
+                    }
+                    else if (category.CategoryId == product.Category.CategoryId)
+                    {
+                        product.Category.CategoryId = Guid.NewGuid();
+                        categoryExists = false;
+                    }
+                }
+
+                if (categoryExists)
                 {
                     sqlInsert = $"INSERT INTO [ProductsProject].[dbo].[Products] " +
                         $"VALUES('{product.ProductId}', " +
@@ -69,6 +84,7 @@ namespace IntegratedBlazorProject.Server.Controllers
                 {
                     sqlInsert = $"INSERT INTO [ProductsProject].[dbo].[Categories] " +
                         $"VALUES('{product.Category.CategoryId}', '{product.Category.Name}');\n" +
+
                         $"INSERT INTO [ProductsProject].[dbo].[Products] " +
                         $"VALUES('{product.ProductId}', " +
                         $"'{product.Name}', " +
@@ -78,6 +94,60 @@ namespace IntegratedBlazorProject.Server.Controllers
                 }
 
                 connection.Execute(sqlInsert);
+            }
+        }
+
+        [HttpPut]
+        public void Update(Product product)
+        {
+            using (var connection = new SqlConnection(ConnString))
+            {
+                var sqlUpdate = "";
+                var sqlCategories = "SELECT c.CategoryId, c.Name FROM [ProductsProject].[dbo].[Categories] c";
+                List<Category> categories = connection.Query<Category>(sqlCategories).AsList();
+                bool categoryExists = false;
+
+                foreach (Category category in categories)
+                {
+                    if ((category.Name == product.Category.Name))
+                    {
+                        product.Category.CategoryId = category.CategoryId;
+                        categoryExists = true;
+                    }
+                    else if (category.CategoryId == product.Category.CategoryId)
+                    {
+                        product.Category.CategoryId = Guid.NewGuid();
+                        categoryExists = false;
+                    }
+                }
+
+                if (categoryExists)
+                {
+                    sqlUpdate = $"UPDATE [ProductsProject].[dbo].[Products] SET " +
+                        $"Name = '{product.Name}', " +
+                        $"Description = '{product.Description}', " +
+                        $"Price = {product.Price}, " +
+                        $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
+                        $"WHERE ProductId = '{product.ProductId}';" +
+
+                        $"UPDATE [ProductsProject].[dbo].[Categories] SET " +
+                        $"Name = '{product.Category.Name}'\n" +
+                        $"WHERE CategoryId = '{product.Category.CategoryId}';";
+                }
+                else
+                {
+                    sqlUpdate = $"INSERT INTO [ProductsProject].[dbo].[Categories] " +
+                        $"VALUES('{product.Category.CategoryId}', '{product.Category.Name}');\n" +
+
+                        $"UPDATE [ProductsProject].[dbo].[Products] SET " +
+                        $"Name = '{product.Name}', " +
+                        $"Description = '{product.Description}', " +
+                        $"Price = {product.Price}, " +
+                        $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
+                        $"WHERE ProductId = '{product.ProductId}';";
+                }
+
+                connection.Execute(sqlUpdate);
             }
         }
 

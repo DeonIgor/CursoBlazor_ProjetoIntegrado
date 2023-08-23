@@ -4,7 +4,7 @@
 <div class="mb-5">
     <h1 class="display-7">Produtos</h1>
     <p class="lead">
-        Esse Componente exemplifica a conexão com banco de dados
+        Esse Componente exemplifica a conexão com banco de dados com Dapper
     </p>
 </div>
 
@@ -23,7 +23,7 @@ else if (Prods.Count == 0)
         Recarregar Lista
     </button>
     <button class="btn btn-primary w-auto" @onclick="addItem">
-        Adiconar Produto
+        Adicionar Produto
     </button>
 }
 else
@@ -57,7 +57,7 @@ else
                     {
                         <input type="text" class="form-control bg-transparent w-25 me-1 text-truncate" @bind="item.Key.Name" disabled />
                         <ValidationMessage For="() => item.Key.Name" />
-                        <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" disabled />
+                        <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" placeholder="---" disabled />
                         <ValidationMessage For="() => item.Key.Description" />
                         <input type="number" class="form-control bg-transparent w-25 mx-1" @bind="item.Key.Price" disabled />
                         <ValidationMessage For="() => item.Key.Price" />
@@ -77,7 +77,7 @@ else
                             <div class="d-flex w-100 mb-1">
                                 <input type="text" class="form-control bg-transparent w-25 me-1 text-truncate" @bind="item.Key.Name" />
                                 <ValidationMessage For="() => item.Key.Name" />
-                                <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" />
+                                <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" placeholder="---" />
                                 <ValidationMessage For="() => item.Key.Description" />
                                 <input type="number" class="form-control bg-transparent w-25 mx-1" @bind="item.Key.Price" />
                                 <ValidationMessage For="() => item.Key.Price" />
@@ -94,6 +94,7 @@ else
                             <div class="d-flex w-100">
                                 <label class="text-end text-muted w-25 p-2">Categoria:</label>
                                 <input type="text" class="form-control bg-transparent w-50 ms-1 text-truncate" @bind="item.Key.Category.Name" />
+                                <ValidationMessage For="() => item.Key.Category.Name" />
                             </div>
                         </div>
                     }
@@ -114,6 +115,9 @@ else
 
     async Task fetchItems()
     {
+        Prods = null;
+        ProductList.Clear();
+
         try
         {
             Prods = await http.GetFromJsonAsync<List<Product>>("api/Products");
@@ -137,16 +141,16 @@ else
 
     async Task addItem()
     {
-        Category c = new Category("Categoria A");
-        Product p = new Product("Nome A", "Descricao A", 150, c);
+        Category c = new Category("---");
+        c.CategoryId = new Guid();
+        Product p = new Product("---", "---", 1, c);
 
         if (Prods.Any(prod => prod == p)) return;
 
         try
         {
             await http.PostAsJsonAsync("api/Products", p);
-            Prods.Add(p);
-            ProductList.Add(p, "readonly");
+            await fetchItems();
         }
         catch (Exception e)
         {
@@ -159,8 +163,7 @@ else
         try
         {
             await http.DeleteAsync($"api/Products/{p.ProductId}");
-            Prods.Remove(p);
-            ProductList.Remove(p);
+            await fetchItems();
         }
         catch (Exception e)
         {
@@ -178,6 +181,15 @@ else
         else
         {
             ProductList[p] = "readonly";
+            try
+            {
+                await http.PutAsJsonAsync("api/Products", p);
+                await fetchItems();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
     }
 }
