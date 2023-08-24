@@ -77,7 +77,7 @@ namespace IntegratedBlazorProject.Server.Controllers
                         $"VALUES('{product.ProductId}', " +
                         $"'{product.Name}', " +
                         $"'{product.Description}', " +
-                        $"{product.Price}, " +
+                        $"'{product.Price.ToString().Replace(',', '.')}', " +
                         $"'{product.Category.CategoryId}')";
                 }
                 else
@@ -89,7 +89,7 @@ namespace IntegratedBlazorProject.Server.Controllers
                         $"VALUES('{product.ProductId}', " +
                         $"'{product.Name}', " +
                         $"'{product.Description}', " +
-                        $"{product.Price}, " +
+                        $"'{product.Price.ToString().Replace(',', '.')}', " +
                         $"'{product.Category.CategoryId}');";
                 }
 
@@ -126,7 +126,7 @@ namespace IntegratedBlazorProject.Server.Controllers
                     sqlUpdate = $"UPDATE [ProductsProject].[dbo].[Products] SET " +
                         $"Name = '{product.Name}', " +
                         $"Description = '{product.Description}', " +
-                        $"Price = {product.Price}, " +
+                        $"Price = '{product.Price.ToString().Replace(',', '.')}', " +
                         $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
                         $"WHERE ProductId = '{product.ProductId}';" +
 
@@ -142,7 +142,7 @@ namespace IntegratedBlazorProject.Server.Controllers
                         $"UPDATE [ProductsProject].[dbo].[Products] SET " +
                         $"Name = '{product.Name}', " +
                         $"Description = '{product.Description}', " +
-                        $"Price = {product.Price}, " +
+                        $"Price = '{product.Price.ToString().Replace(',', '.')}', " +
                         $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
                         $"WHERE ProductId = '{product.ProductId}';";
                 }

@@ -60,7 +60,12 @@ else
                         <ValidationMessage For="() => item.Key.Name" />
                         <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" placeholder="---" disabled />
                         <ValidationMessage For="() => item.Key.Description" />
-                        <input type="number" class="form-control bg-transparent w-25 mx-1" @bind="item.Key.Price" disabled />
+                        <div class="input-group w-25 mx-1">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-transparent rounded-0 rounded-start border-end-0 pe-0">R$</span>
+                            </div>
+                            <input type="number" class="form-control bg-transparent rounded-0 rounded-end border-start-0 ps-1" step="0.01" @bind="item.Key.Price" disabled />
+                        </div>
                         <ValidationMessage For="() => item.Key.Price" />
 
                         <div class="d-flex w-25">
@@ -80,7 +85,12 @@ else
                                 <ValidationMessage For="() => item.Key.Name" />
                                 <input type="text" class="form-control bg-transparent w-25 mx-1 text-truncate" @bind="item.Key.Description" placeholder="---" />
                                 <ValidationMessage For="() => item.Key.Description" />
-                                <input type="number" class="form-control bg-transparent w-25 mx-1" @bind="item.Key.Price" />
+                                <div class="input-group w-25 mx-1">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-transparent rounded-0 rounded-start border-end-0 pe-0">R$</span>
+                                    </div>
+                                    <input type="number" class="form-control bg-transparent rounded-0 rounded-end border-start-0 ps-1" step="0.01" @bind="item.Key.Price" />
+                                </div>
                                 <ValidationMessage For="() => item.Key.Price" />
 
                                 <div class="d-flex w-25">

@@ -28,17 +28,22 @@
                 </div>
             </div>
             <div class="form-group row my-1">
-                <label class="col-2">Preço</label>
-                <div class="col-9">
-                    <input type="number" class="form-control bg-transparent text-truncate" @bind="product.Price">
-                    <ValidationMessage For="() => product.Price" />
-                </div>
-            </div>
-            <div class="form-group row my-1">
                 <label class="col-2">Categoria</label>
                 <div class="col-9">
                     <input type="search" class="form-control bg-transparent text-truncate" @bind="product.Category.Name">
                     <ValidationMessage For="() => product.Category.Name" />
+                </div>
+            </div>
+            <div class="form-group row my-1">
+                <label class="col-2">Valor</label>
+                <div class="col-9">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                        <span class="input-group-text bg-transparent rounded-0 rounded-start border-end-0 pe-0">R$</span>
+                        </div>
+                    <input type="number" class="form-control bg-transparent rounded-0 rounded-end border-start-0 ps-1" step="0.01" @bind="product.Price" />
+                    </div>
+                    <ValidationMessage For="() => product.Price" />
                 </div>
             </div>
 
