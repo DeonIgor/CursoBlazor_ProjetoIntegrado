@@ -19,17 +19,19 @@ namespace IntegratedBlazorProject.Server.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Product> Get()
+        public IEnumerable<Product> Get([FromQuery] int skip, [FromQuery] int take)
         {
             using (var connection = new SqlConnection(ConnString))
             {
-                var sqlProducts = "SELECT p.ProductId, p.Name, p.Description, p.Price FROM [ProductsProject].[dbo].[Products] p";
+                var sqlProducts = "SELECT p.ProductId, p.Name, p.Description, p.Price FROM [ProductsProject].[dbo].[Products] p " +
+                    $"ORDER BY p.Name OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY";
                 IEnumerable<Product> products = connection.Query<Product>(sqlProducts).AsList();
 
                 var sqlCategories = "SELECT * FROM [ProductsProject].[dbo].[Categories] c";
                 IEnumerable<Category> categories = connection.Query<Category>(sqlCategories).AsList();
                 
-                var sqlCategoriesIds = "SELECT p.FK_CategoryId FROM [ProductsProject].[dbo].[Products] p";
+                var sqlCategoriesIds = "SELECT p.FK_CategoryId FROM [ProductsProject].[dbo].[Products] p " +
+                    $"ORDER BY p.Name OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY";
                 IEnumerable<Guid> categoriesIds = connection.Query<Guid>(sqlCategoriesIds).AsList();
 
                 for(int i = 0; i < products.Count(); i++)

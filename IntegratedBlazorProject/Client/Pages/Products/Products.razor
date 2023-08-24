@@ -131,7 +131,7 @@ else
 
         try
         {
-            Prods = await http.GetFromJsonAsync<List<Product>>("api/Products");
+            Prods = await http.GetFromJsonAsync<List<Product>>("api/Products?skip=0&take=2");
             if (Prods != null)
             {
                 foreach (Product p in Prods)
