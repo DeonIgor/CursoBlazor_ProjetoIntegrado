@@ -117,8 +117,8 @@ else
 
 @code {
     Dictionary<Product, string> ProductList = new Dictionary<Product, string>();
-    List<Product> Prods { get; set; }
-
+    List<Product>? Prods { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
         await fetchItems();
@@ -126,12 +126,17 @@ else
 
     async Task fetchItems()
     {
+        int skip = 0;
+        int take = 10;
+        // skip = pageNumber * take
+        // pageNumber = floor( skip / take )
+
         Prods = null;
         ProductList.Clear();
 
         try
         {
-            Prods = await http.GetFromJsonAsync<List<Product>>("api/Products?skip=0&take=2");
+            Prods = await http.GetFromJsonAsync<List<Product>>($"api/Products?skip={skip}&take={take}");
             if (Prods != null)
             {
                 foreach (Product p in Prods)
@@ -150,7 +155,7 @@ else
         }
     }
 
-    async Task addItem()
+    void addItem()
     {
         NavManager.NavigateTo("/products/create");
     }
