@@ -2,8 +2,7 @@
 using IntegratedBlazorProject.Shared.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reflection.Metadata;
 
 namespace IntegratedBlazorProject.Server.Controllers
 {
@@ -18,148 +17,205 @@ namespace IntegratedBlazorProject.Server.Controllers
             ConnString = System.Configuration.ConfigurationManager.ConnectionStrings["connString"].ConnectionString;
         }
 
+        [HttpGet("count")]
+        public async Task<ActionResult<int>> Count()
+        {
+            using (var connection = new SqlConnection(ConnString))
+            {
+                var sql = "SELECT COUNT(*) FROM [ProductsProject].[dbo].[Products];";
+                int result;
+
+                try
+                {
+                    result = await connection.ExecuteScalarAsync<int>(sql);
+                    return Ok(result);
+                }
+                catch (Exception e)
+                {
+                    return BadRequest(e.Message);
+                }
+            }
+        }
+
         [HttpGet]
-        public IEnumerable<Product> Get([FromQuery] int skip, [FromQuery] int take)
+        public async Task<ActionResult<IEnumerable<Product>>> Get([FromQuery] int skip = 0, [FromQuery] int take = 20)
         {
             using (var connection = new SqlConnection(ConnString))
             {
                 var sqlProducts = "SELECT p.ProductId, p.Name, p.Description, p.Price FROM [ProductsProject].[dbo].[Products] p " +
                     $"ORDER BY p.Name OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY";
-                IEnumerable<Product> products = connection.Query<Product>(sqlProducts).AsList();
-
-                var sqlCategories = "SELECT * FROM [ProductsProject].[dbo].[Categories] c";
-                IEnumerable<Category> categories = connection.Query<Category>(sqlCategories).AsList();
-                
                 var sqlCategoriesIds = "SELECT p.FK_CategoryId FROM [ProductsProject].[dbo].[Products] p " +
                     $"ORDER BY p.Name OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY";
-                IEnumerable<Guid> categoriesIds = connection.Query<Guid>(sqlCategoriesIds).AsList();
+                var sqlCategories = "SELECT * FROM [ProductsProject].[dbo].[Categories] c";
+                IEnumerable<Product> products;
+                IEnumerable<Category> categories;
+                IEnumerable<Guid> categoriesIds;
 
-                for(int i = 0; i < products.Count(); i++)
+                try
                 {
-                    foreach (Category category in categories)
+                    products = await connection.QueryAsync<Product>(sqlProducts);
+                    categories = await connection.QueryAsync<Category>(sqlCategories);
+                    categoriesIds = await connection.QueryAsync<Guid>(sqlCategoriesIds);
+
+                    for (int i = 0; i < products.Count(); i++)
                     {
-                        if (category.CategoryId == categoriesIds.ElementAt(i))
+                        foreach (Category category in categories)
                         {
-                            products.ElementAt(i).Category = category;
+                            if (category.CategoryId == categoriesIds.ElementAt(i))
+                            {
+                                products.ElementAt(i).Category = category;
+                            }
                         }
                     }
-                }
 
-                return products;
+                    return Ok(products);
+                }
+                catch (Exception e)
+                {
+                    return BadRequest(e.Message);
+                }
             }
         }
 
         [HttpPost]
-        public void Add(Product product)
+        public async Task<ActionResult> Add(Product product)
         {
             using (var connection = new SqlConnection(ConnString))
             {
                 var sqlInsert = "";
                 var sqlCategories = "SELECT c.CategoryId, c.Name FROM [ProductsProject].[dbo].[Categories] c";
-                List<Category> categories = connection.Query<Category>(sqlCategories).AsList();
                 bool categoryExists = false;
-
-                foreach (Category category in categories)
+                IEnumerable<Category> categories;
+                try
                 {
-                    if ((category.Name == product.Category.Name))
+                    categories = await connection.QueryAsync<Category>(sqlCategories);
+
+                    foreach (Category category in categories)
                     {
-                        product.Category.CategoryId = category.CategoryId;
-                        categoryExists = true;
+                        if ((category.Name == product.Category.Name))
+                        {
+                            product.Category.CategoryId = category.CategoryId;
+                            categoryExists = true;
+                        }
+                        else if (category.CategoryId == product.Category.CategoryId)
+                        {
+                            product.Category.CategoryId = Guid.NewGuid();
+                            categoryExists = false;
+                        }
                     }
-                    else if (category.CategoryId == product.Category.CategoryId)
+
+                    if (categoryExists)
                     {
-                        product.Category.CategoryId = Guid.NewGuid();
-                        categoryExists = false;
+                        sqlInsert = $"INSERT INTO [ProductsProject].[dbo].[Products] " +
+                            $"VALUES('{product.ProductId}', " +
+                            $"'{product.Name}', " +
+                            $"'{product.Description}', " +
+                            $"'{product.Price.ToString().Replace(',', '.')}', " +
+                            $"'{product.Category.CategoryId}')";
                     }
-                }
+                    else
+                    {
+                        sqlInsert = $"INSERT INTO [ProductsProject].[dbo].[Categories] " +
+                            $"VALUES('{product.Category.CategoryId}', '{product.Category.Name}');\n" +
 
-                if (categoryExists)
+                            $"INSERT INTO [ProductsProject].[dbo].[Products] " +
+                            $"VALUES('{product.ProductId}', " +
+                            $"'{product.Name}', " +
+                            $"'{product.Description}', " +
+                            $"'{product.Price.ToString().Replace(',', '.')}', " +
+                            $"'{product.Category.CategoryId}');";
+                    }
+
+                    connection.Execute(sqlInsert);
+                    return Ok();
+                }
+                catch (Exception ex)
                 {
-                    sqlInsert = $"INSERT INTO [ProductsProject].[dbo].[Products] " +
-                        $"VALUES('{product.ProductId}', " +
-                        $"'{product.Name}', " +
-                        $"'{product.Description}', " +
-                        $"'{product.Price.ToString().Replace(',', '.')}', " +
-                        $"'{product.Category.CategoryId}')";
+                    return BadRequest(ex.Message);
                 }
-                else
-                {
-                    sqlInsert = $"INSERT INTO [ProductsProject].[dbo].[Categories] " +
-                        $"VALUES('{product.Category.CategoryId}', '{product.Category.Name}');\n" +
-
-                        $"INSERT INTO [ProductsProject].[dbo].[Products] " +
-                        $"VALUES('{product.ProductId}', " +
-                        $"'{product.Name}', " +
-                        $"'{product.Description}', " +
-                        $"'{product.Price.ToString().Replace(',', '.')}', " +
-                        $"'{product.Category.CategoryId}');";
-                }
-
-                connection.Execute(sqlInsert);
             }
         }
 
         [HttpPut]
-        public void Update(Product product)
+        public async Task<ActionResult> Update(Product product)
         {
             using (var connection = new SqlConnection(ConnString))
             {
                 var sqlUpdate = "";
                 var sqlCategories = "SELECT c.CategoryId, c.Name FROM [ProductsProject].[dbo].[Categories] c";
-                List<Category> categories = connection.Query<Category>(sqlCategories).AsList();
                 bool categoryExists = false;
+                IEnumerable<Category> categories;
 
-                foreach (Category category in categories)
+                try
                 {
-                    if ((category.Name == product.Category.Name))
+                    categories = await connection.QueryAsync<Category>(sqlCategories);
+
+                    foreach (Category category in categories)
                     {
-                        product.Category.CategoryId = category.CategoryId;
-                        categoryExists = true;
+                        if ((category.Name == product.Category.Name))
+                        {
+                            product.Category.CategoryId = category.CategoryId;
+                            categoryExists = true;
+                        }
+                        else if (category.CategoryId == product.Category.CategoryId)
+                        {
+                            product.Category.CategoryId = Guid.NewGuid();
+                            categoryExists = false;
+                        }
                     }
-                    else if (category.CategoryId == product.Category.CategoryId)
+
+                    if (categoryExists)
                     {
-                        product.Category.CategoryId = Guid.NewGuid();
-                        categoryExists = false;
+                        sqlUpdate = $"UPDATE [ProductsProject].[dbo].[Products] SET " +
+                            $"Name = '{product.Name}', " +
+                            $"Description = '{product.Description}', " +
+                            $"Price = '{product.Price.ToString().Replace(',', '.')}', " +
+                            $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
+                            $"WHERE ProductId = '{product.ProductId}';" +
+
+                            $"UPDATE [ProductsProject].[dbo].[Categories] SET " +
+                            $"Name = '{product.Category.Name}'\n" +
+                            $"WHERE CategoryId = '{product.Category.CategoryId}';";
                     }
+                    else
+                    {
+                        sqlUpdate = $"INSERT INTO [ProductsProject].[dbo].[Categories] " +
+                            $"VALUES('{product.Category.CategoryId}', '{product.Category.Name}');\n" +
+
+                            $"UPDATE [ProductsProject].[dbo].[Products] SET " +
+                            $"Name = '{product.Name}', " +
+                            $"Description = '{product.Description}', " +
+                            $"Price = '{product.Price.ToString().Replace(',', '.')}', " +
+                            $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
+                            $"WHERE ProductId = '{product.ProductId}';";
+                    }
+
+                    connection.Execute(sqlUpdate);
+                    return Ok();
                 }
-
-                if (categoryExists)
-                {
-                    sqlUpdate = $"UPDATE [ProductsProject].[dbo].[Products] SET " +
-                        $"Name = '{product.Name}', " +
-                        $"Description = '{product.Description}', " +
-                        $"Price = '{product.Price.ToString().Replace(',', '.')}', " +
-                        $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
-                        $"WHERE ProductId = '{product.ProductId}';" +
-
-                        $"UPDATE [ProductsProject].[dbo].[Categories] SET " +
-                        $"Name = '{product.Category.Name}'\n" +
-                        $"WHERE CategoryId = '{product.Category.CategoryId}';";
+                catch (Exception e) 
+                { 
+                    return BadRequest(e.Message);
                 }
-                else
-                {
-                    sqlUpdate = $"INSERT INTO [ProductsProject].[dbo].[Categories] " +
-                        $"VALUES('{product.Category.CategoryId}', '{product.Category.Name}');\n" +
-
-                        $"UPDATE [ProductsProject].[dbo].[Products] SET " +
-                        $"Name = '{product.Name}', " +
-                        $"Description = '{product.Description}', " +
-                        $"Price = '{product.Price.ToString().Replace(',', '.')}', " +
-                        $"FK_CategoryId = '{product.Category.CategoryId}'\n" +
-                        $"WHERE ProductId = '{product.ProductId}';";
-                }
-
-                connection.Execute(sqlUpdate);
             }
         }
 
         [HttpDelete("{id}")]
-        public void Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id)
         {
             using (var connection = new SqlConnection(ConnString))
             {
                 var sql = $"DELETE FROM [ProductsProject].[dbo].[Products] WHERE ProductId = '{id.ToString()}'";
-                connection.Execute(sql);
+                
+                try
+                {
+                    await connection.ExecuteAsync(sql);
+                    return Ok();
+                }
+                catch (SqlException e)
+                {
+                    return BadRequest(e.Message);
+                }
             }
         }
     }

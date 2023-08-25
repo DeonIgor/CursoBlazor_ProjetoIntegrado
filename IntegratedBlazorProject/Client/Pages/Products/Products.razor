@@ -118,25 +118,29 @@ else
 @code {
     Dictionary<Product, string> ProductList = new Dictionary<Product, string>();
     List<Product>? Prods { get; set; }
-    
+    Pagination? Pagination { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        await fetchItems();
+        try
+        {
+            Pagination = new Pagination(await http.GetFromJsonAsync<int>("api/Products/count"), 20);
+            await fetchItems();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 
     async Task fetchItems()
     {
-        int skip = 0;
-        int take = 10;
-        // skip = pageNumber * take
-        // pageNumber = floor( skip / take )
-
         Prods = null;
         ProductList.Clear();
 
         try
         {
-            Prods = await http.GetFromJsonAsync<List<Product>>($"api/Products?skip={skip}&take={take}");
+            Prods = await http.GetFromJsonAsync<List<Product>>($"api/Products?skip={Pagination.Skip}&take={Pagination.Take}");
             if (Prods != null)
             {
                 foreach (Product p in Prods)

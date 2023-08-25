@@ -8,21 +8,25 @@ namespace IntegratedBlazorProject.Shared.Model
 
         [Required(ErrorMessage = "*Campo Obrigatório")]
         [MaxLength(50, ErrorMessage = "*Máximo de 50 Caracteres")]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         [MaxLength(150, ErrorMessage = "*Máximo de 150 Caracteres")]
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "*Campo Obrigatório")]
         [Range(0.0, float.MaxValue, ErrorMessage = "*O Preço Deve Ser Um Valor Positivo")]
-        public float? Price { get; set; }
+        public float Price { get; set; }
 
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
 
-        public Product() 
+
+        public Product()
         {
-            this.ProductId = Guid.NewGuid() ;
-            this.Category = new Category();
+            this.ProductId = Guid.NewGuid();
+            this.Name = "";
+            this.Description = "";
+            this.Price = 0;
+            this.Category = null;
         }
 
         public Product(string name, string description, float price, Category category)
