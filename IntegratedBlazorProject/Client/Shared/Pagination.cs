@@ -110,5 +110,20 @@
         {
             this.TotalCount--;
         }
+
+        public int FCurrentPage()
+        {
+            return (Page + 1);
+        }
+
+        public int FNextPage()
+        {
+            return (Page + 2);
+        }
+
+        public int FPreviousPage()
+        {
+            return Page;
+        }
     }
 }

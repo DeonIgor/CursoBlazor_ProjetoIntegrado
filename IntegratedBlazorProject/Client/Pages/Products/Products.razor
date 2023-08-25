@@ -2,6 +2,25 @@
 @inject HttpClient http
 @inject NavigationManager NavManager
 
+<style>
+    .page-item {
+        cursor: pointer
+    }
+    .active_item a {
+        background-color: dimgrey;
+        color: whitesmoke;
+        cursor: default;
+    }
+    .active_item a:hover {
+        background-color: dimgrey;
+        color: whitesmoke;
+        cursor: default;
+    }
+    .disabled:hover {
+        cursor: default;
+    }
+</style>
+
 <div class="mb-5">
     <h1 class="display-7">Produtos</h1>
     <p class="lead">
@@ -111,6 +130,65 @@ else
                     }
                 </EditForm>
             }
+            <nav class="w-75 p-0 mt-1" aria-label="...">
+                <ul class="pagination pagination justify-content-center">
+                    @if (Pagination?.Page == 0)
+                    {
+                        <li class="page-item col-2 text-center disabled">
+                            <a class="page-link link-dark">Previous</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item col-2 text-center" @onclick="previousPage">
+                            <a class="page-link link-dark">Previous</a>
+                        </li>
+                    }
+               
+                    @if (Pagination?.Page == 0)
+                    {
+                        <li class="page-item col-1 text-center disabled">
+                            <a class="page-link link-dark">-</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item col-1 text-center" @onclick="() => changePage(Pagination.FPreviousPage())">
+                            <a class="page-link link-dark">@Pagination?.FPreviousPage()</a>
+                        </li>
+                    }
+
+                    <li class="page-item col-1 text-center active_item" aria-current="page">
+                        <a class="page-link link-dark">@Pagination?.FCurrentPage()</a>
+                    </li>
+
+                    @if (Pagination?.Page == Pagination?.PageCount - 1)
+                    {
+                        <li class="page-item col-1 text-center disabled">
+                            <a class="page-link link-dark">-</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item col-1 text-center" @onclick="() => changePage(Pagination.FNextPage())">
+                            <a class="page-link link-dark">@Pagination?.FNextPage()</a>
+                        </li>
+                    }
+
+                    @if (Pagination?.Page == Pagination?.PageCount - 1)
+                    {
+                        <li class="page-item col-2 text-center disabled">
+                            <a class="page-link link-dark">Next</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item col-2 text-center">
+                            <a class="page-link link-dark" @onclick="nextPage">Next</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
         </div>
     </div>
 }
@@ -124,7 +202,7 @@ else
     {
         try
         {
-            Pagination = new Pagination(await http.GetFromJsonAsync<int>("api/Products/count"), 20);
+            Pagination = new Pagination(await http.GetFromJsonAsync<int>("api/Products/count"), 5);
             await fetchItems();
         }
         catch (Exception e)
@@ -196,5 +274,23 @@ else
                 Console.WriteLine(e.Message);
             }
         }
+    }
+
+    async Task nextPage()
+    {
+        Pagination?.NextPage();
+        await fetchItems();
+    }
+
+    async Task previousPage()
+    {
+        Pagination?.PreviousPage();
+        await fetchItems();
+    }
+
+    async Task changePage(int page)
+    {
+        Pagination?.ChangePage(page-1);
+        await fetchItems();
     }
 }

@@ -26,7 +26,7 @@ namespace IntegratedBlazorProject.Shared.Model
             this.Name = "";
             this.Description = "";
             this.Price = 0;
-            this.Category = null;
+            this.Category = new Category();
         }
 
         public Product(string name, string description, float price, Category category)
